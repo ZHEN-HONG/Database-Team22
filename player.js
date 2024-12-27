@@ -1,5 +1,6 @@
 var hover = false;
 var enterEdit = false;
+var mode = "";
 var currentMonth;
 var search = {
     name: "",
@@ -25,7 +26,7 @@ $("#submit").on("click", function(event) {
         search.sex = sex;
         // uncheck edit mode
         $("#edit-enable").prop("checked", false);
-        $(".edit, .delete").css("display", "none").css("opacity", "0");
+        $(".edit, .delete, .new").css("opacity", "0");
         
         var url = "player_query.php?m=search";
         $("#table-content").load(url, {
@@ -41,7 +42,8 @@ $("#submit").on("click", function(event) {
 $("#table").on("click", ".row", function() {
     $(this).addClass("select");
     if (!hover) {
-        var playerId = this.dataset.value; // get player id
+        // get player id
+        var playerId = $(this).attr("data-value");
     
         // show profile animation
         $("#profile").css("height", "100%").css("opacity", "100%");
@@ -52,12 +54,12 @@ $("#table").on("click", ".row", function() {
     }
 })
 
-// close the profile
+// close profile
 $("body").on("click", "#profile", function(event) {
     if (!$(event.target).parents().is("#profile")) {
         // unmark as selected
         $(".select").removeClass("select");
-        // close animation
+
         $("#profile").css("height", "0").css("opacity", "0");
         $("#profile-content").css("marginTop", "130px").css("marginBottom", "20px").css("opacity", "0");
         // clear profile content
@@ -66,26 +68,54 @@ $("body").on("click", "#profile", function(event) {
 })
 
 // open edit ui
-$("#table").on("click", ".edit", function(event) {
-    var playerId = $(event.target).parents(".row").attr("data-value");
+$("#table").on("click", ".edit", function() {
+    mode = "edit";
+    var playerId = $(this).parents(".row").attr("data-value");
     $("#edit-ui").css("height", "100%").css("opacity", "100%");
     $("#edit-ui-content").css("marginTop", "100px").css("marginButtom", "50px").css("opacity", "100%");
+    $("#edit-ui-content > h2").html("Edit Profile");
     // load autofill
     $("#edit-req").load("player_query.php?m=edit-ui&p=" + playerId);
 })
 
-// close the edit ui
+// close edit ui
 $("body").on("click", "#edit-ui", function(event) {
     if (!$(event.target).parents().is("#edit-ui")) {
         enterEdit = false;
         // unmark as selected
         $(".select").removeClass("select");
-        // close animation
+
         $("#edit-ui").css("height", "0").css("opacity", "0");
         $("#edit-ui-content").css("marginTop", "130px").css("marginBottom", "20px").css("opacity", "0");
         // clear content
         $("#edit-req").html("");
     }
+})
+
+// open delete ui
+$("table").on("click", ".delete", function() {
+    $("#delete-ui").css("height", "100%").css("opacity", "100%");
+    $("#delete-warning").css("marginTop", "250px").css("opacity", "100%");
+})
+
+// close delete ui
+$("body").on("click", "#delete-ui", function(event) {
+    if (!$(event.target).parents().is("#delete-ui")) {
+        // unmark as selected
+        $(".select").removeClass("select");
+
+        $("#delete-ui").css("height", "0").css("opacity", "0");
+        $("#delete-warning").css("marginTop", "280px").css("opacity", "0");
+    }
+})
+
+// open new ui
+$(".new").on("click", function() {
+    mode = "new";
+    $("#edit-ui").css("height", "100%").css("opacity", "100%");
+    $("#edit-ui-content").css("marginTop", "100px").css("marginButtom", "50px").css("opacity", "100%");
+    $("#edit-ui-content > h2").html("Create Profile");
+    $("#edit-req").load("player_query.php?m=new-ui");
 })
 
 $("#cancel").on("click", function() {
@@ -99,13 +129,22 @@ $("#cancel").on("click", function() {
     $("#edit-req").html("");
 })
 
+$("#delete-cancel").on("click", function() {
+    // unmark as selected
+    $(".select").removeClass("select");
+
+    $("#delete-ui").css("height", "0").css("opacity", "0");
+    $("#delete-warning").css("marginTop", "280px").css("opacity", "0");
+})
+
 $(".slider").on("click", function() {
     if (!$("#edit-enable").prop("checked")) {
         $(".edit").css("right", "-45px").css("opacity", "100%");
         $(".delete").css("right", "-75px").css("opacity", "100%");
+        $(".new").css("right", "-80px").css("opacity", "100%");
     }
     else {
-        $(".edit, .delete").css("right", "-1000px").css("opacity", "0");
+        $(".edit, .delete, .new").css("right", "-1000px").css("opacity", "0");
     }
 })
 
@@ -170,11 +209,14 @@ $("#confirm").on("click", function() {
     
     // check basic profile
     var name = $("#edit-name").val();
+    var id = $("#edit-req > h3").attr("data-value");
     var height = $("#edit-height").val();
     var weight = $("#edit-weight").val();
     var byear = $("#edit-byear").val();
     var bmonth = $("#edit-bmonth").val().padStart(2, "0");
     var bday = $("#edit-bday").val().padStart(2, "0");
+    var noc = $("#edit-country").val();
+    var sex = $("#edit-sex").val();
 
     if (name == "" || height == "" || weight == "" || byear == "") {
         hasEmpty = true;
@@ -192,13 +234,14 @@ $("#confirm").on("click", function() {
                 type: "POST",
                 data: {
                     "target": "basic",
-                    "id": $(".select").attr("data-value"),
-                    "name": $("#edit-name").val(),
-                    "sex": $("#edit-sex").val(),
+                    "mode": mode,
+                    "id": id,
+                    "name": name,
+                    "sex": sex,
                     "birthday": byear + "-" + bmonth + "-" + bday,
-                    "height": $("#edit-height").val(),
-                    "weight": $("#edit-weight").val(),
-                    "country": $("#edit-country").val()
+                    "height": height,
+                    "weight": weight,
+                    "noc": noc
                 },
                 success: function(data) {
                     if (data != "1") {
@@ -257,9 +300,9 @@ $("#confirm").on("click", function() {
                         "new-sport": hasNewSport,
                         "new-event": hasNewEvent,
                         "rec": hasRecord,
-                        "country": $("#edit-country").val(),
-                        "athlete": $("#edit-name").val(),
-                        "athleteID": $(".select").attr("data-value")
+                        "noc": noc,
+                        "athlete": name,
+                        "athleteID": id
                     },
                     success: function(data) {
                         //console.log(data);
@@ -269,7 +312,6 @@ $("#confirm").on("click", function() {
         })
 
         // remove event
-        var playerID = $(".select").attr("data-value");
         $(".edit-events-remove").each(function() {
             if($(this).prop("checked")) {
                 var resultID = $(this).val();
@@ -279,7 +321,10 @@ $("#confirm").on("click", function() {
                     data: {
                         "target": "event",
                         "resultID": resultID,
-                        "playerID": playerID
+                        "playerID": id
+                    },
+                    success: function(data) {
+                        //console.log(data);
                     }
                 });
             }
@@ -295,8 +340,46 @@ $("#confirm").on("click", function() {
             $("#edit-ui-content").css("marginTop", "130px").css("marginBottom", "20px").css("opacity", "0");
             // clear content
             $("#edit-req").html("");
-
+            
             alert("update successfully!");
+            // reload search
+            if (mode == "new") {
+                search.name = name;
+                $("#default").remove();
+            }
+            $("#table-content").load("player_query.php?m=search", {
+                "player": search.name,
+                "country": search.country,
+                "sex": search.sex
+            }, function() {
+                $(".edit").css("right", "-45px").css("opacity", "100%");
+                $(".delete").css("right", "-75px").css("opacity", "100%");
+                $(".new").css("right", "-80px").css("opacity", "100%");
+            });
+        }
+        else {
+            alert("update failed");
+        }
+    }
+})
+
+$("#delete-confirm").on("click", function() {
+    var id = $(".select").attr("data-value");
+    $.ajax({
+        url: "player_query.php?m=delete",
+        type: "POST",
+        data: {
+            "target": "player",
+            "id": id
+        },
+        success: function() {
+            // unmark as selected
+            $(".select").removeClass("select");
+            // close animation
+            $("#delete-ui").css("height", "0").css("opacity", "0");
+            $("#delete-warning").css("marginTop", "280px").css("opacity", "0");
+
+            alert("delete successfully!");
             // reload search
             $("#table-content").load("player_query.php?m=search", {
                 "player": search.name,
@@ -305,12 +388,10 @@ $("#confirm").on("click", function() {
             }, function() {
                 $(".edit").css("right", "-45px").css("opacity", "100%");
                 $(".delete").css("right", "-75px").css("opacity", "100%");
+                $(".new").css("right", "-80px").css("opacity", "100%");
             });
         }
-        else {
-            alert("update failed");
-        }
-    }
+    })
 })
 
 $("#edit-ui-content").on("click", "#edit-new-event-btn", function() {
@@ -360,131 +441,68 @@ $("#edit-ui-content").on("click", "#edit-new-event-btn", function() {
 })
 
 // dynamically create selection
-// * change event listener won't give a damn when the value is changed by jquery load so i have to do it manually *
-$("#edit-ui-content").on("change", ".edit-new-event-season", function() {
-    var row = $(this).parents("td");
-    var season = $(this).val();
-    $(this).children(".empty").remove();
-    row.find(".edit-new-event-year").load("options_query.php?m=year&s=" + season, function() {
-        var year = $(this).val();
-        row.find(".edit-new-event-sport").load("options_query.php?m=sport&s=" + season + "&y=" + year, function() {
-            var sport = $(this).val();
-            row.find(".edit-new-event-event").load("options_query.php?m=event", {
-                "season": season,
-                "year": year,
-                "sport": sport,
-                "sex": $("#edit-sex").val()
-            }, function() {
-                var event = $(this).val();
-                $.ajax({
-                    type: "POST",
-                    url: "options_query.php?m=record",
-                    data: {
-                        "sport": sport,
-                        "event": event
-                    },
-                    success: function(str) {
-                        if (str == '0') {
-                            row.find(".edit-record-container").css("display", "none").attr("data-value", "0");
-                        }
-                        else {
-                            // get unit
-                            var id = str.indexOf("(");
-                            var unit = str.substring(id + 1, str.length - 1);
-                            row.find(".edit-record-container").css("display", "block").attr("data-value", "1").find(".edit-record-unit").html(unit);
-                        }
-                        newInstance(row.find(".edit-record-container"), "");
-                    }
-                })
-                newInstance($(this), row.find(".edit-event-event-textbox"));
-            });
-            newInstance($(this), row.find(".edit-event-sport-textbox"));
-        });
-        newInstance($(this), row.find(".edit-event-year-textbox"));
+$("#edit-ui-content").on("change", ".edit-new-event-season", function() { getYearOption($(this).parents("td")); });
+$("#edit-ui-content").on("change", ".edit-new-event-year", function() { getSportOption($(this).parents("td")); });
+$("#edit-ui-content").on("change", ".edit-new-event-sport", function() { getEventOption($(this).parents("td")); });
+$("#edit-ui-content").on("change", ".edit-new-event-event", function() { checkNewRecord($(this).parents("td")); });
+
+// change event option when sex is modified as well
+$("#edit-ui-content").on("change", "#edit-sex", function() {
+    $(".edit-new-event-event").each(function() {
+        if ($(this).val() != "") {
+            getEventOption($(this).parents("td"));
+        }
     });
 })
 
-$("#edit-ui-content").on("change", ".edit-new-event-year", function() {
-    var row = $(this).parents("td");
+// FUNCTION //
+
+/**
+ * 
+ * @param {JQuery} row 
+ */
+function getYearOption(row) {
     var season = row.find(".edit-new-event-season").val();
-    var year = $(this).val();
-    row.find(".edit-new-event-sport").load("options_query.php?m=sport&s=" + season + "&y=" + year, function() {
-        var sport = $(this).val();
-        row.find(".edit-new-event-event").load("options_query.php?m=event", {
-            "season": season,
-            "year": year,
-            "sport": sport,
-            "sex": $("#edit-sex").val()
-        }, function() {
-            var event = $(this).val();
-            $.ajax({
-                type: "POST",
-                url: "options_query.php?m=record",
-                data: {
-                    "sport": sport,
-                    "event": event
-                },
-                success: function(str) {
-                    if (str == '0') {
-                        row.find(".edit-record-container").css("display", "none").attr("data-value", "0");
-                    }
-                    else {
-                        // get unit
-                        var id = str.indexOf("(");
-                        var unit = str.substring(id + 1, str.length - 1);
-                        row.find(".edit-record-container").css("display", "block").attr("data-value", "1").find(".edit-record-unit").html(unit);
-                    }
-                    newInstance(row.find(".edit-record-container"), "");
-                }
-            })
-            newInstance($(this), row.find(".edit-event-event-textbox"));
-        });
-        newInstance($(this), row.find(".edit-event-sport-textbox"));
-    });
-    newInstance($(this), row.find(".edit-event-year-textbox"));
-})
+    row.find(".edit-new-event-season").children(".empty").remove();
+    row.find(".edit-new-event-year").load("options_query.php?m=year&s=" + season, function() { getSportOption(row); });
+}
 
-$("#edit-ui-content").on("change", ".edit-new-event-sport", function() {
-    var row = $(this).parents("td");
+/**
+ * 
+ * @param {JQuery} row 
+ */
+function getSportOption(row) {
     var season = row.find(".edit-new-event-season").val();
     var year = row.find(".edit-new-event-year").val();
-    var sport = $(this).val();
+    row.find(".edit-new-event-sport").load("options_query.php?m=sport&s=" + season + "&y=" + year,
+        function() { getEventOption(row); });
+    newInstance(row.find(".edit-new-event-year"), row.find(".edit-event-year-textbox"));
+}
+
+/**
+ * 
+ * @param {JQuery} row 
+ */
+function getEventOption(row) {
+    var season = row.find(".edit-new-event-season").val();
+    var year = row.find(".edit-new-event-year").val();
+    var sport = row.find(".edit-new-event-sport").val();
     row.find(".edit-new-event-event").load("options_query.php?m=event", {
         "season": season,
         "year": year,
         "sport": sport,
         "sex": $("#edit-sex").val()
-    }, function() {
-        var event = $(this).val();
-        $.ajax({
-            type: "POST",
-            url: "options_query.php?m=record",
-            data: {
-                "sport": sport,
-                "event": event
-            },
-            success: function(str) {
-                if (str == '0') {
-                    row.find(".edit-record-container").css("display", "none").attr("data-value", "0");
-                }
-                else {
-                    // get unit
-                    var id = str.indexOf("(");
-                    var unit = str.substring(id + 1, str.length - 1);
-                    row.find(".edit-record-container").css("display", "block").attr("data-value", "1").find(".edit-record-unit").html(unit);
-                }
-                newInstance(row.find(".edit-record-container"), "");
-            }
-        })
-        newInstance($(this), row.find(".edit-event-event-textbox"));
-    });
-    newInstance($(this), row.find(".edit-event-sport-textbox"));
-})
+    }, function() { checkNewRecord(row); });
+    newInstance(row.find(".edit-new-event-sport"), row.find(".edit-event-sport-textbox"));
+}
 
-$("#edit-ui-content").on("change", ".edit-new-event-event", function() {
-    var row = $(this).parents("td");
+/**
+ * 
+ * @param {JQuery} row 
+ */
+function checkNewRecord(row) {
     var sport = row.find(".edit-new-event-sport").val();
-    var event = $(this).val();
+    var event = row.find(".edit-new-event-event").val();
     $.ajax({
         type: "POST",
         url: "options_query.php?m=record",
@@ -505,14 +523,12 @@ $("#edit-ui-content").on("change", ".edit-new-event-event", function() {
             newInstance(row.find(".edit-record-container"), "");
         }
     })
-    newInstance($(this), row.find(".edit-event-event-textbox"));
-})
+    newInstance(row.find(".edit-new-event-event"), row.find(".edit-event-event-textbox"));
+}
 
 $("#edit-ui-content").on("click", ".remove-new-event", function() {
     $(this).parents("tr").remove();
 })
-
-// FUNCTION //
 
 function daysInMonth(month, year) {
     var y = Number(year);

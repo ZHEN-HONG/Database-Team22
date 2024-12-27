@@ -111,11 +111,19 @@ th {
     height: 60px;
 }
 
+#table tr.individual:hover {
+    background-color: rgb(255, 255, 255) !important;
+}
+
+#table tr.individual .individual-td:hover {
+    background-color: rgb(255, 244, 229) !important;
+}
+
 #table tr.search-empty:hover {
     background-color: rgb(255, 255, 255) !important;
 }
 
-#profile, #edit-ui {
+#profile, #edit-ui, #delete-ui {
     overflow: hidden;
     opacity: 0;
     position: fixed;
@@ -128,7 +136,7 @@ th {
     transition: opacity 0.2s;
 }
 
-#profile-content, #edit-ui-content {
+#profile-content, #edit-ui-content, #delete-warning {
     overflow: hidden;
     opacity: 0;
     background-color: white;
@@ -144,7 +152,7 @@ th {
     transition: margin-top 0.5s cubic-bezier(0.16, 1, 0.3, 1), margin-bottom 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s;
 }
 
-.row.select {
+.row.select, .individual-td.select {
     background-color: rgb(255, 244, 229);
 }
 
@@ -405,7 +413,30 @@ input:checked + .slider:before {
     color: red;
 }
 
-.edit, .delete {
+.new {
+    position: absolute;
+    width: 60px;
+    height: 30px;
+    right: -1075px;
+    top: -24px;
+
+    background-color: white;
+    border: 3px solid rgb(1, 170, 204);
+    border-radius: 5px;
+
+    color: rgb(1, 170, 204);
+    font-size: 15px;
+    font-weight: 700;
+    text-align: center;
+
+    cursor: pointer;
+}
+
+.new:hover {
+    background-color: #c8eaf3;
+}
+
+.edit, .delete, .new {
     opacity: 0;
     transition: opacity 0.2s;
 }
@@ -416,6 +447,10 @@ input:checked + .slider:before {
 
 .delete:hover {
     background-color: rgb(255, 206, 206);
+}
+
+.delete:disabled {
+    display: none;
 }
 
 #edit-name {
@@ -432,10 +467,17 @@ input:checked + .slider:before {
     height: 20px;
     border: 3px solid;
     border-radius: 50%;
+    font-family: "Alatsi", sans-serif;
     text-align: center;
     font-weight: 700;
     margin-left: 10px;
     line-height: normal;
+}
+
+.medal.small {
+    width: 18px;
+    height: 18px;
+    margin-right: 5px;
 }
 
 .medal.gold {
@@ -460,7 +502,7 @@ input:checked + .slider:before {
     border-left: 2px solid rgb(155, 155, 155);
 }
 
-#edit-ui-content {
+#edit-ui-content, #delete-warning {
     position: relative;
 }
 
@@ -470,7 +512,14 @@ input:checked + .slider:before {
     right: 30px;
 }
 
-#confirm {
+#delete-modal-button {
+    position: absolute;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#confirm, #delete-confirm {
     background-color: rgb(130, 225, 211);
     padding: 5px 10px;
     border: 3px solid rgb(64, 106, 106);
@@ -484,11 +533,11 @@ input:checked + .slider:before {
     transition: background-color 0.1s;
 }
 
-#confirm:hover {
+#confirm:hover, #delete-confirm:hover {
     background-color: rgb(108, 195, 182);
 }
 
-#cancel {
+#cancel, #delete-cancel {
     background-color: rgb(203, 203, 203);
     padding: 5px 10px;
     border: 3px solid rgb(91, 91, 91);
@@ -501,7 +550,7 @@ input:checked + .slider:before {
     transition: background-color 0.1s;
 }
 
-#cancel:hover {
+#cancel:hover, #delete-cancel:hover {
     background-color: rgb(167, 167, 167);
 }
 
@@ -599,6 +648,7 @@ input:checked + .slider:before {
     vertical-align: middle;
     color: white;
     overflow-y: hidden;
+    padding-top: 1px;
 }
 
 .edit-events-remove:checked + .edit-remove-label {
@@ -609,5 +659,74 @@ input:checked + .slider:before {
 
 .edit-events-remove:checked + .edit-remove-label span {
     display: inline-block;
-    padding-top: 1px;
+}
+
+.edit-events-remove:disabled + .edit-remove-label {
+    background-color: rgb(197, 197, 197);
+    color: rgb(197, 197, 197);
+}
+
+#delete-warning {
+    font-family: "Oxygen", sans-serif;
+    width: 30%;
+    height: 120px;
+    padding: 30px;
+    margin-top: 280px;
+    border: 5px solid rgb(193, 61, 61);
+}
+
+#delete-warning h2 {
+    text-align: center;
+    font-weight: 700;
+    margin: 0;
+}
+
+#country-profile {
+    height: 430px;
+    overflow-y: scroll;
+
+    margin-top: 30px;
+}
+
+.country-profile-collapse-btn, .country-sport-collapse-btn {
+    width: 95%;
+    height: 55px;
+    overflow: hidden;
+
+    padding: 12px;
+    margin-top: 15px;
+    border: 0;
+    border-bottom: 2px solid rgb(169, 169, 169);
+
+    font-family: "Oxygen", sans-serif;
+    font-size: 21px;
+    font-weight: 700;
+    text-align: left;
+    color: rgb(95, 95, 95);
+
+    cursor: pointer;
+}
+
+.collapse-btn-indicator {
+    display: inline-block;
+    vertical-align: middle;
+
+    padding: 0 10px;
+}
+
+.country-profile-collapse-content, .country-sport-collapse-content {
+    height: 0;
+    padding-left: 50px;
+    overflow: hidden;
+
+    transition: height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+p.country-event {
+    margin: 8px 0;
+
+    font-family: "Oxygen", sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 15px;
 }

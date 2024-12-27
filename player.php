@@ -68,7 +68,12 @@
                             <th>Athlete</th>
                             <th>Country</th>
                             <th>Born</th>
-                            <th>Sex</th>
+                            <th>
+                                Sex
+                                <div style="position: relative">
+                                    <button class="new">+ New</button>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="table-content"></tbody>
@@ -88,6 +93,16 @@
                     <span id="modal-button">
                         <button id="confirm">Confirm</button>
                         <button id="cancel">Cancel</button>
+                    </span>
+                </div>
+            </div>
+            <div id="delete-ui">
+                <div id="delete-warning">
+                    <h2>Are you SURE you want to delete?</h2>
+                    <p style="text-align: center">This action <b style="color: red">cannot</b> be reverted</p>
+                    <span id="delete-modal-button">
+                        <button id="delete-confirm">Confirm</button>
+                        <button id="delete-cancel">Cancel</button>
                     </span>
                 </div>
             </div>
